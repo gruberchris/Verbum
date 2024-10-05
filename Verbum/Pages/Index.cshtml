@@ -1,0 +1,18 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<h1>Latest Article</h1>
+
+@if (string.IsNullOrEmpty(Model.LatestArticleContent))
+{
+    <p>No articles available.</p>
+}
+else
+{
+    <div>
+        @Html.Raw(Model.LatestArticleContent)
+    </div>
+}

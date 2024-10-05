@@ -1,0 +1,25 @@
+@page
+@model Verbum.Pages.SearchResults
+
+@{
+    ViewData["Title"] = "Search Results";
+}
+
+<h1>Search Results</h1>
+
+@if (Model.MatchedArticles != null && Model.MatchedArticles.Length > 0)
+{
+    <ul>
+        @foreach (var result in Model.MatchedArticles)
+        {
+            <li>
+                <a asp-page="/Article"
+                   asp-route-articleName="@result.Name">@result.Name</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No articles found.</p>
+}
