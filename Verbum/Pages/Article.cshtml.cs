@@ -26,7 +26,8 @@ public class Article : PageModel
         if (System.IO.File.Exists(filePath))
         {
             var markdownContent = await System.IO.File.ReadAllTextAsync(filePath);
-            ArticleContent = Markdown.ToHtml(markdownContent);
+            var pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
+            ArticleContent = Markdown.ToHtml(markdownContent, pipeline);
         }
         else
         {

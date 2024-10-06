@@ -1,0 +1,12 @@
+@* File: Pages/Shared/_Subheader.cshtml *@
+<div class="subheader d-flex justify-content-between align-items-center mb-3">
+    <div class="left-controls">
+        @* Add any additional controls here *@
+    </div>
+    <div class="right-controls">
+        <form method="get" action="/SearchResults">
+            <input type="text" name="query" value="@Context.Request.Query["query"]" placeholder="Search for articles..." />
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</div>

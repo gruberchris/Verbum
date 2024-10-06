@@ -28,18 +28,18 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-page="/CreateArticle">Create Article</a>
                     </li>
-                    <li>
-                        <form method="get" action="/SearchResults">
-                            <input type="text" name="query" value="@Context.Request.Query["query"]" placeholder="Search for articles..." />
-                            <button type="submit">Search</button>
-                        </form>
-                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 </header>
 <div class="container">
+    @if (ViewContext.ActionDescriptor.DisplayName.Contains("Index") ||
+        ViewContext.ActionDescriptor.DisplayName.Contains("SearchResults") ||
+        ViewContext.ActionDescriptor.DisplayName.Contains("Article"))
+    {
+        @await Html.PartialAsync("_Subheader")
+    }
     <main role="main" class="pb-3">
         @RenderBody()
     </main>
