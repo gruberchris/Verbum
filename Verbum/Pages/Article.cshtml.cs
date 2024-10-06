@@ -19,16 +19,17 @@ public class Article(ILogger<Article> logger) : PageModel
 
         logger.LogDebug("Article requested: {ArticleName}", articleName);
 
-        var filePath = Path.Combine("wwwroot", "articles", $"{articleName}.md");
+        var articlesDirectory = Path.Combine("wwwroot", "articles");
+        var articleFilePath = Directory
+            .GetFiles(articlesDirectory, $"{articleName}.md", SearchOption.AllDirectories)
+            .FirstOrDefault();
 
-        logger.LogDebug("Requested article file path: {FilePath}", filePath);
-        
-        if (System.IO.File.Exists(filePath))
+        if (articleFilePath != null)
         {
-            var markdownContent = await System.IO.File.ReadAllTextAsync(filePath);
+            logger.LogDebug("Requested article file path: {FilePath}", articleFilePath);
 
-            // Update image and markdown file URLs to point to the wwwroot folder
-            var articlePath = $"/articles/{articleName}/";
+            var markdownContent = await System.IO.File.ReadAllTextAsync(articleFilePath);
+            var articlePath = $"/articles/{Path.GetDirectoryName(articleFilePath)?.Replace(articlesDirectory, "").Trim(Path.DirectorySeparatorChar)}/";
             markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({articlePath}$2)");
             markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?\.md)\)", $"[$1]({articlePath}$2)");
 

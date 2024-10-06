@@ -10,15 +10,15 @@ ViewData["Title"] = "Create Article";
 <form method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
     <div class="form-group">
         <label for="ArticleName">Article Name</label>
-        <input type="text" class="form-control" id="ArticleName" name="ArticleName" required />
+        <input type="text" class="form-control" id="ArticleName" name="ArticleName" required oninput="toggleControls()" />
     </div>
     <div class="form-group">
         <label for="MarkdownContent">Markdown Content</label>
-        <textarea class="form-control" id="MarkdownContent" name="MarkdownContent" rows="10" oninput="toggleControls()"></textarea>
+        <textarea class="form-control" id="MarkdownContent" name="MarkdownContent" rows="10" oninput="toggleControls()" disabled></textarea>
     </div>
     <div class="form-group">
         <label for="MarkdownFile">Upload Markdown File</label>
-        <input type="file" class="form-control" id="MarkdownFile" name="MarkdownFile" accept=".md" onchange="toggleControls()" />
+        <input type="file" class="form-control" id="MarkdownFile" name="MarkdownFile" accept=".md" onchange="toggleControls()" disabled />
         <button type="button" class="btn btn-secondary" id="clearMarkdownFileButton" onclick="clearMarkdownFile()" disabled>Clear Markdown File</button>
     </div>
     <div class="form-group">
@@ -26,13 +26,19 @@ ViewData["Title"] = "Create Article";
         <input type="file" class="form-control" id="Files" name="Files" multiple disabled onchange="toggleControls()" />
         <button type="button" class="btn btn-secondary" id="clearFilesButton" onclick="clearFiles()" disabled>Clear Files</button>
     </div>
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="submit" class="btn btn-primary" id="saveButton" disabled>Save</button>
 </form>
 
 <script>
     function validateForm() {
+        const articleName = document.getElementById("ArticleName").value;
         const markdownContent = document.getElementById("MarkdownContent").value;
         const markdownFile = document.getElementById("MarkdownFile").files.length;
+
+        if (!articleName) {
+            alert("Please provide an Article Name.");
+            return false;
+        }
 
         if (!markdownContent && markdownFile === 0) {
             alert("Please provide Markdown content as the article or upload an existing Markdown file.");
@@ -42,6 +48,7 @@ ViewData["Title"] = "Create Article";
     }
 
     function toggleControls() {
+        const articleName = document.getElementById("ArticleName").value;
         const markdownContent = document.getElementById("MarkdownContent").value;
         const markdownFile = document.getElementById("MarkdownFile").files.length;
         const markdownContentControl = document.getElementById("MarkdownContent");
@@ -49,17 +56,27 @@ ViewData["Title"] = "Create Article";
         const mediaFilesControl = document.getElementById("Files");
         const clearMarkdownFileButton = document.getElementById("clearMarkdownFileButton");
         const clearFilesButton = document.getElementById("clearFilesButton");
+        const saveButton = document.getElementById("saveButton");
 
-        if (markdownContent) {
-            markdownFileControl.disabled = true;
-            mediaFilesControl.disabled = false;
-        } else if (markdownFile > 0) {
-            markdownContentControl.disabled = true;
-            mediaFilesControl.disabled = false;
-        } else {
+        if (articleName) {
             markdownContentControl.disabled = false;
             markdownFileControl.disabled = false;
+            saveButton.disabled = false;
+
+            if (markdownContent) {
+                markdownFileControl.disabled = true;
+                mediaFilesControl.disabled = false;
+            } else if (markdownFile > 0) {
+                markdownContentControl.disabled = true;
+                mediaFilesControl.disabled = false;
+            } else {
+                mediaFilesControl.disabled = true;
+            }
+        } else {
+            markdownContentControl.disabled = true;
+            markdownFileControl.disabled = true;
             mediaFilesControl.disabled = true;
+            saveButton.disabled = true;
         }
 
         clearMarkdownFileButton.disabled = markdownFile === 0;
