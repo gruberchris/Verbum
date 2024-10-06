@@ -15,7 +15,7 @@ public class SearchResults(ILogger<SearchResults> logger) : PageModel
         
             logger.LogDebug("Search query: {Query}", Query);
 
-            var articlesDirectory = Path.Combine("Articles");
+            var articlesDirectory = Path.Combine("wwwroot", "articles");
         
             if (Directory.Exists(articlesDirectory))
             {

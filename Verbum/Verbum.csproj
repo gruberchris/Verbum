@@ -11,9 +11,6 @@
         <Content Include="..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
-        <Content Include="Articles\**\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
     </ItemGroup>
 
     <ItemGroup>
@@ -21,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Articles\" />
+      <Folder Include="wwwroot\articles\" />
     </ItemGroup>
 
 </Project>

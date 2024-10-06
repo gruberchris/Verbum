@@ -2,19 +2,79 @@
 @model Verbum.Pages.CreateArticle
 
 @{
-    ViewData["Title"] = "Create Article";
+ViewData["Title"] = "Create Article";
 }
 
 <h1>Create a New Article</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
     <div class="form-group">
         <label for="ArticleName">Article Name</label>
         <input type="text" class="form-control" id="ArticleName" name="ArticleName" required />
     </div>
     <div class="form-group">
         <label for="MarkdownContent">Markdown Content</label>
-        <textarea class="form-control" id="MarkdownContent" name="MarkdownContent" rows="10" required></textarea>
+        <textarea class="form-control" id="MarkdownContent" name="MarkdownContent" rows="10" oninput="toggleControls()"></textarea>
+    </div>
+    <div class="form-group">
+        <label for="MarkdownFile">Upload Markdown File</label>
+        <input type="file" class="form-control" id="MarkdownFile" name="MarkdownFile" accept=".md" onchange="toggleControls()" />
+        <button type="button" class="btn btn-secondary" id="clearMarkdownFileButton" onclick="clearMarkdownFile()" disabled>Clear Markdown File</button>
+    </div>
+    <div class="form-group">
+        <label for="Files">Upload Media Files</label>
+        <input type="file" class="form-control" id="Files" name="Files" multiple disabled onchange="toggleControls()" />
+        <button type="button" class="btn btn-secondary" id="clearFilesButton" onclick="clearFiles()" disabled>Clear Files</button>
     </div>
     <button type="submit" class="btn btn-primary">Save</button>
 </form>
+
+<script>
+    function validateForm() {
+        const markdownContent = document.getElementById("MarkdownContent").value;
+        const markdownFile = document.getElementById("MarkdownFile").files.length;
+
+        if (!markdownContent && markdownFile === 0) {
+            alert("Please provide Markdown content as the article or upload an existing Markdown file.");
+            return false;
+        }
+        return true;
+    }
+
+    function toggleControls() {
+        const markdownContent = document.getElementById("MarkdownContent").value;
+        const markdownFile = document.getElementById("MarkdownFile").files.length;
+        const markdownContentControl = document.getElementById("MarkdownContent");
+        const markdownFileControl = document.getElementById("MarkdownFile");
+        const mediaFilesControl = document.getElementById("Files");
+        const clearMarkdownFileButton = document.getElementById("clearMarkdownFileButton");
+        const clearFilesButton = document.getElementById("clearFilesButton");
+
+        if (markdownContent) {
+            markdownFileControl.disabled = true;
+            mediaFilesControl.disabled = false;
+        } else if (markdownFile > 0) {
+            markdownContentControl.disabled = true;
+            mediaFilesControl.disabled = false;
+        } else {
+            markdownContentControl.disabled = false;
+            markdownFileControl.disabled = false;
+            mediaFilesControl.disabled = true;
+        }
+
+        clearMarkdownFileButton.disabled = markdownFile === 0;
+        clearFilesButton.disabled = mediaFilesControl.files.length === 0;
+    }
+
+    function clearMarkdownFile() {
+        const markdownFileControl = document.getElementById("MarkdownFile");
+        markdownFileControl.value = "";
+        toggleControls();
+    }
+
+    function clearFiles() {
+        const mediaFilesControl = document.getElementById("Files");
+        mediaFilesControl.value = "";
+        toggleControls();
+    }
+</script>

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Markdig;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -9,21 +10,31 @@ public class IndexModel(ILogger<IndexModel> logger) : PageModel
 
     public async Task OnGetAsync()
     {
-        var articlesDirectory = Path.Combine("Articles");
-        
+        var articlesDirectory = Path.Combine("wwwroot", "articles");
+
         if (Directory.Exists(articlesDirectory))
         {
-            var latestFile = new DirectoryInfo(articlesDirectory)
-                .GetFiles("*.md")
-                .OrderByDescending(f => f.LastWriteTime)
+            var latestDirectory = new DirectoryInfo(articlesDirectory)
+                .GetDirectories()
+                .OrderByDescending(d => d.LastWriteTime)
                 .FirstOrDefault();
 
-            if (latestFile != null)
+            if (latestDirectory != null)
             {
-                var markdownContent = await System.IO.File.ReadAllTextAsync(latestFile.FullName);
-                LatestArticleContent = Markdown.ToHtml(markdownContent);
-                
-                logger.LogDebug("Rendered the latest article found: {ArticleName}", latestFile.Name);
+                var markdownFile = latestDirectory.GetFiles("*.md").FirstOrDefault();
+                if (markdownFile != null)
+                {
+                    var markdownContent = await System.IO.File.ReadAllTextAsync(markdownFile.FullName);
+
+                    // Update image URLs to point to the wwwroot folder
+                    var articlePath = $"/articles/{latestDirectory.Name}/";
+                    markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({articlePath}$2)");
+                    markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?\.md)\)", $"[$1]({articlePath}$2)");
+
+                    LatestArticleContent = Markdown.ToHtml(markdownContent);
+
+                    logger.LogDebug("Rendered the latest article found: {ArticleName}", markdownFile.Name);
+                }
             }
         }
     }
