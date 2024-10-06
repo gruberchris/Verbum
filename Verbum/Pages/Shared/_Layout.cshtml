@@ -34,7 +34,7 @@
     </nav>
 </header>
 <div class="container">
-    @if (ViewContext.ActionDescriptor.DisplayName.Contains("Index") ||
+    @if (ViewContext.ActionDescriptor.DisplayName!.Contains("Index") ||
         ViewContext.ActionDescriptor.DisplayName.Contains("SearchResults") ||
         ViewContext.ActionDescriptor.DisplayName.Contains("Article"))
     {

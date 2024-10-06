@@ -6,14 +6,10 @@ namespace Verbum.Pages;
 public class CreateArticle : PageModel
 {
     [BindProperty]
-    public string ArticleName { get; set; }
+    public string ArticleName { get; set; } = string.Empty;
 
     [BindProperty]
-    public string MarkdownContent { get; set; }
-
-    public void OnGet()
-    {
-    }
+    public string MarkdownContent { get; set; } = string.Empty;
 
     public async Task<IActionResult> OnPostAsync()
     {
@@ -22,14 +18,20 @@ public class CreateArticle : PageModel
             return Page();
         }
 
-        var filePath = Path.Combine("wwwroot", "articles", $"{ArticleName}.md");
+        var formattedArticleName = ConvertToSlug(ArticleName);
+        var filePath = Path.Combine("Articles", $"{formattedArticleName}.md");
 
         // Ensure the directory exists
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
         // Save the markdown content to a file
         await System.IO.File.WriteAllTextAsync(filePath, MarkdownContent);
 
         return RedirectToPage("/Index");
+    }
+    
+    private static string ConvertToSlug(string input)
+    {
+        return input.Replace(" ", "-").ToLowerInvariant();
     }
 }

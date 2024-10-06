@@ -2,38 +2,40 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Verbum.Pages;
 
-public class SearchResults : PageModel
+public class SearchResults(ILogger<SearchResults> logger) : PageModel
 {
-    private readonly ILogger<SearchResults> _logger;
+    public string Query { get; set; } = string.Empty;
+    public (string Name, string Url)[]? MatchedArticles { get; set; }
 
-    public SearchResults(ILogger<SearchResults> logger)
+    public Task OnGet(string query)
     {
-        _logger = logger;
-    }
-
-    public string Query { get; set; }
-    public (string Name, string Url)[] MatchedArticles { get; set; }
-
-    public async Task OnGetAsync(string query)
-    {
-        if (string.IsNullOrEmpty(query))
+        if (!string.IsNullOrEmpty(query))
         {
-            MatchedArticles = Array.Empty<(string, string)>();
-            return;
+            Query = ConvertToSlug(query);
+        
+            logger.LogDebug("Search query: {Query}", Query);
+
+            var articlesDirectory = Path.Combine("Articles");
+        
+            if (Directory.Exists(articlesDirectory))
+            {
+                var files = new DirectoryInfo(articlesDirectory)
+                    .GetFiles("*.md")
+                    .Where(f => f.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                    .Select(f => (Name: Path.GetFileNameWithoutExtension(f.Name), Url: $"/articles/{f.Name}"))
+                    .ToArray();
+
+                MatchedArticles = files;
+            
+                logger.LogDebug("Matched articles: {MatchedArticles}", files);
+            }
         }
         
-        Query = query;
-
-        var articlesDirectory = Path.Combine("wwwroot", "articles");
-        if (Directory.Exists(articlesDirectory))
-        {
-            var files = new DirectoryInfo(articlesDirectory)
-                .GetFiles("*.md")
-                .Where(f => f.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .Select(f => (Name: Path.GetFileNameWithoutExtension(f.Name), Url: $"/articles/{f.Name}"))
-                .ToArray();
-
-            MatchedArticles = files;
-        }
+        return Task.CompletedTask;
+    }
+    
+    private static string ConvertToSlug(string input)
+    {
+        return input.Replace(" ", "-").ToLowerInvariant();
     }
 }

@@ -8,13 +8,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
+        <Content Include="Articles\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Markdig" Version="0.37.0" />
+        <PackageReference Include="Markdig" Version="0.37.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Articles\" />
     </ItemGroup>
 
 </Project>

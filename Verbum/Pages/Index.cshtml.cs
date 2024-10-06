@@ -3,20 +3,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Verbum.Pages;
 
-public class IndexModel : PageModel
+public class IndexModel(ILogger<IndexModel> logger) : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
-
-    public IndexModel(ILogger<IndexModel> logger)
-    {
-        _logger = logger;
-    }
-
-    public string LatestArticleContent { get; set; }
+    public string LatestArticleContent { get; set; } = string.Empty;
 
     public async Task OnGetAsync()
     {
-        var articlesDirectory = Path.Combine("wwwroot", "articles");
+        var articlesDirectory = Path.Combine("Articles");
+        
         if (Directory.Exists(articlesDirectory))
         {
             var latestFile = new DirectoryInfo(articlesDirectory)
@@ -28,6 +22,8 @@ public class IndexModel : PageModel
             {
                 var markdownContent = await System.IO.File.ReadAllTextAsync(latestFile.FullName);
                 LatestArticleContent = Markdown.ToHtml(markdownContent);
+                
+                logger.LogDebug("Rendered the latest article found: {ArticleName}", latestFile.Name);
             }
         }
     }
