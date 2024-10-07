@@ -30,7 +30,9 @@ public class IndexModel(ILogger<IndexModel> logger) : PageModel
                     // Update image URLs to point to the wwwroot folder
                     var articlePath = $"/articles/{latestDirectory.Name}/";
                     markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({articlePath}$2)");
-                    markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?\.md)\)", $"[$1]({articlePath}$2)");
+
+                    // Update markdown links to point to the Article view
+                    markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?\.md)\)", $"[$1](/Article?file=$2&folder={latestDirectory.Name})");
 
                     LatestArticleContent = Markdown.ToHtml(markdownContent);
 

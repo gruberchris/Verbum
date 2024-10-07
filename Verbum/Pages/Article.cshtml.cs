@@ -8,38 +8,31 @@ public class Article(ILogger<Article> logger) : PageModel
 {
     public string ArticleContent { get; set; } = string.Empty;
 
-    public async Task OnGetAsync(string articleName)
+    public async Task OnGetAsync(string file, string folder)
     {
-        if (string.IsNullOrEmpty(articleName))
+        if (string.IsNullOrEmpty(file) || string.IsNullOrEmpty(folder))
         {
             ArticleContent = "Article not found.";
-            logger.LogWarning("Article name is empty");
+            logger.LogWarning("File or folder name is empty");
             return;
         }
 
-        logger.LogDebug("Article requested: {ArticleName}", articleName);
+        logger.LogDebug("Article requested: {File} in folder {Folder}", file, folder);
 
-        var articlesDirectory = Path.Combine("wwwroot", "articles");
-        var articleFilePath = Directory
-            .GetFiles(articlesDirectory, $"{articleName}.md", SearchOption.AllDirectories)
-            .FirstOrDefault();
-
-        if (articleFilePath != null)
-        {
-            logger.LogDebug("Requested article file path: {FilePath}", articleFilePath);
-
-            var markdownContent = await System.IO.File.ReadAllTextAsync(articleFilePath);
-            var articlePath = $"/articles/{Path.GetDirectoryName(articleFilePath)?.Replace(articlesDirectory, "").Trim(Path.DirectorySeparatorChar)}/";
-            markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({articlePath}$2)");
-            markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?\.md)\)", $"[$1]({articlePath}$2)");
-
-            var pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
-            ArticleContent = Markdown.ToHtml(markdownContent, pipeline);
-        }
-        else
+        var filePath = Path.Combine("wwwroot", "articles", folder, file);
+        if (!System.IO.File.Exists(filePath))
         {
             ArticleContent = "Article not found.";
-            logger.LogWarning("Requested article not found: {ArticleName}", articleName);
+            logger.LogWarning("Requested article not found: {FilePath}", filePath);
+            return;
         }
+
+        var markdownContent = await System.IO.File.ReadAllTextAsync(filePath);
+        var articlePath = $"/articles/{folder}/";
+        markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({articlePath}$2)");
+        markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?\.md)\)", $"[$1](/Article?file=$2&folder={folder})");
+
+        var pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
+        ArticleContent = Markdown.ToHtml(markdownContent, pipeline);
     }
 }
