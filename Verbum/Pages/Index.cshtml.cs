@@ -21,7 +21,8 @@ public class IndexModel(ILogger<IndexModel> logger) : PageModel
 
             if (latestDirectory != null)
             {
-                var markdownFile = latestDirectory.GetFiles("*.md").FirstOrDefault();
+                var markdownFileName = $"{latestDirectory.Name}.md";
+                var markdownFile = latestDirectory.GetFiles(markdownFileName).FirstOrDefault();
                 if (markdownFile != null)
                 {
                     var markdownContent = await System.IO.File.ReadAllTextAsync(markdownFile.FullName);
