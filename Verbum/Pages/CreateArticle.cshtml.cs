@@ -21,13 +21,13 @@ public class CreateArticle(ILogger<CreateArticle> logger) : PageModel
     {
         if (!ModelState.IsValid)
         {
-            logger.LogError("Model state is invalid");
+            logger.LogDebug("Model state is invalid");
 
             foreach (var state in ModelState)
             {
                 foreach (var error in state.Value.Errors)
                 {
-                    logger.LogError("ModelState error in {Key}: {ErrorMessage}", state.Key, error.ErrorMessage);
+                    logger.LogDebug("ModelState error in {Key}: {ErrorMessage}", state.Key, error.ErrorMessage);
                 }
             }
 

@@ -15,7 +15,7 @@ public class SearchResults(ILogger<SearchResults> logger) : PageModel
     {
         if (string.IsNullOrEmpty(query))
         {
-            logger.LogWarning("Search query is empty");
+            logger.LogDebug("Search query is empty");
             return Task.CompletedTask;
         }
 
