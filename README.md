@@ -1,6 +1,6 @@
 # Verbum
 
-Verbum is a web application for creating, indexing, and searching markdown-based articles. It uses ASP\.NET Core Razor Pages and a custom indexing service to provide efficient search functionality.
+Verbum is a web application for creating, indexing, and searching markdown-based articles. It uses ASP.NET Core Razor Pages and a custom indexing service to provide efficient search functionality.
 
 ## Features
 
@@ -40,7 +40,7 @@ Verbum is a web application for creating, indexing, and searching markdown-based
     dotnet run
     ```
 
-2. Open your browser and navigate to `https://localhost:5001`.
+2. Open your browser and navigate to `https://localhost:5120`.
 
 ### Usage
 
