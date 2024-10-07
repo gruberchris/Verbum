@@ -2,7 +2,7 @@
 @model Verbum.Pages.CreateArticle
 
 @{
-    ViewData["Title"] = "Create Article";
+ViewData["Title"] = "Create Article";
 }
 
 <h1>Create a New Article</h1>
@@ -12,28 +12,44 @@
         <label for="ArticleName">Article Name</label>
         <input type="text" class="form-control" id="ArticleName" name="ArticleName" required oninput="toggleControls()" />
     </div>
+
     <div class="form-group">
-        <label for="MarkdownContent">Markdown Content</label>
-        <textarea class="form-control" id="MarkdownContent" name="MarkdownContent" rows="10" oninput="toggleControls()" disabled></textarea>
+        <label>Root Markdown Content</label>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-secondary" id="typeMarkdownButton" onclick="showMarkdownEditor()">Type Markdown</button>
+            <button type="button" class="btn btn-secondary" id="uploadMarkdownButton" onclick="showMarkdownUploader()">Upload Markdown</button>
+        </div>
     </div>
-    <div class="form-group">
+
+    <div class="form-group" id="markdownEditor" style="display:none;">
+        <label for="MarkdownContent">Markdown Content</label>
+        <textarea class="form-control" id="MarkdownContent" name="MarkdownContent" rows="10" oninput="toggleControls()"></textarea>
+    </div>
+
+    <div class="form-group" id="markdownUploader" style="display:none;">
         <label for="MarkdownFile">Upload Markdown File</label>
         <div class="input-group">
             <button type="button" class="btn btn-link" id="clearMarkdownFileButton" onclick="clearMarkdownFile()" disabled>
                 <i class="fas fa-times"></i>
             </button>
-            <input type="file" class="form-control" id="MarkdownFile" name="MarkdownFile" accept=".md" onchange="toggleControls()" disabled />
+            <input type="file" class="form-control" id="MarkdownFile" name="MarkdownFile" accept=".md" onchange="toggleControls()" />
         </div>
     </div>
-    <div class="form-group">
-        <label for="Files">Upload Media Files</label>
+
+    <div class="form-group" id="mediaUploader" style="display:none;">
+        <label for="Files">Upload Supporting Media Files</label>
         <div class="input-group">
             <button type="button" class="btn btn-link" id="clearFilesButton" onclick="clearFiles()" disabled>
                 <i class="fas fa-times"></i>
             </button>
-            <input type="file" class="form-control" id="Files" name="Files" multiple disabled onchange="toggleControls()" />
+            <input type="file" class="form-control" id="Files" name="Files" multiple accept="image/*" onchange="toggleControls()" />
         </div>
     </div>
+
+    <div id="additionalMarkdownFiles"></div>
+
+    <button type="button" class="btn btn-secondary" onclick="addAdditionalMarkdown()">Add Additional Markdown File</button>
+
     <button type="submit" class="btn btn-primary" id="saveButton" disabled>Save</button>
 </form>
 
@@ -59,48 +75,125 @@
         const articleName = document.getElementById("ArticleName").value;
         const markdownContent = document.getElementById("MarkdownContent").value;
         const markdownFile = document.getElementById("MarkdownFile").files.length;
-        const markdownContentControl = document.getElementById("MarkdownContent");
-        const markdownFileControl = document.getElementById("MarkdownFile");
+        const mediaUploader = document.getElementById("mediaUploader");
         const mediaFilesControl = document.getElementById("Files");
         const clearMarkdownFileButton = document.getElementById("clearMarkdownFileButton");
         const clearFilesButton = document.getElementById("clearFilesButton");
         const saveButton = document.getElementById("saveButton");
 
         if (articleName) {
-            markdownContentControl.disabled = false;
-            markdownFileControl.disabled = false;
             saveButton.disabled = false;
 
-            if (markdownContent) {
-                markdownFileControl.disabled = true;
-                mediaFilesControl.disabled = false;
-            } else if (markdownFile > 0) {
-                markdownContentControl.disabled = true;
+            if (markdownContent || markdownFile > 0) {
+                mediaUploader.style.display = "block";
                 mediaFilesControl.disabled = false;
             } else {
+                mediaUploader.style.display = "none";
                 mediaFilesControl.disabled = true;
             }
         } else {
-            markdownContentControl.disabled = true;
-            markdownFileControl.disabled = true;
-            mediaFilesControl.disabled = true;
             saveButton.disabled = true;
+            mediaUploader.style.display = "none";
+            mediaFilesControl.disabled = true;
         }
 
         clearMarkdownFileButton.disabled = markdownFile === 0;
         clearFilesButton.disabled = mediaFilesControl.files.length === 0;
     }
 
+    function showMarkdownEditor() {
+        document.getElementById("markdownEditor").style.display = "block";
+        document.getElementById("markdownUploader").style.display = "none";
+        document.getElementById("MarkdownFile").value = "";
+        toggleControls();
+    }
+
+    function showMarkdownUploader() {
+        document.getElementById("markdownEditor").style.display = "none";
+        document.getElementById("markdownUploader").style.display = "block";
+        document.getElementById("MarkdownContent").value = "";
+        toggleControls();
+    }
+
     function clearMarkdownFile() {
-        const markdownFileControl = document.getElementById("MarkdownFile");
-        markdownFileControl.value = "";
+        document.getElementById("MarkdownFile").value = "";
         toggleControls();
     }
 
     function clearFiles() {
-        const mediaFilesControl = document.getElementById("Files");
-        mediaFilesControl.value = "";
+        document.getElementById("Files").value = "";
         toggleControls();
+    }
+
+    function addAdditionalMarkdown() {
+        const additionalMarkdownFiles = document.getElementById("additionalMarkdownFiles");
+        const index = additionalMarkdownFiles.children.length;
+
+        const newMarkdownGroup = document.createElement("div");
+        newMarkdownGroup.className = "form-group";
+        newMarkdownGroup.innerHTML = `
+            <label>Additional Markdown Content ${index + 1}</label>
+            <div class="form-group">
+                <label for="AdditionalMarkdownFileName${index}">File Name</label>
+                <input type="text" class="form-control" id="AdditionalMarkdownFileName${index}" name="AdditionalMarkdownFileNames" required />
+            </div>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-secondary" onclick="showAdditionalMarkdownEditor(${index})">Type Markdown</button>
+                <button type="button" class="btn btn-secondary" onclick="showAdditionalMarkdownUploader(${index})">Upload Markdown</button>
+            </div>
+            <div class="form-group" id="additionalMarkdownEditor${index}" style="display:none;">
+                <label for="AdditionalMarkdownContent${index}">Markdown Content</label>
+                <textarea class="form-control" id="AdditionalMarkdownContent${index}" name="AdditionalMarkdownContents" rows="10"></textarea>
+            </div>
+            <div class="form-group" id="additionalMarkdownUploader${index}" style="display:none;">
+                <label for="AdditionalMarkdownFile${index}">Upload Markdown File</label>
+                <div class="input-group">
+                    <button type="button" class="btn btn-link" onclick="clearAdditionalMarkdownFile(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <input type="file" class="form-control" id="AdditionalMarkdownFile${index}" name="AdditionalMarkdownFiles" accept=".md" />
+                </div>
+            </div>
+            <div class="form-group" id="additionalMediaUploader${index}" style="display:none;">
+                <label for="AdditionalFiles${index}">Upload Supporting Media Files</label>
+                <div class="input-group">
+                    <button type="button" class="btn btn-link" onclick="clearAdditionalFiles(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <input type="file" class="form-control" id="AdditionalFiles${index}" name="AdditionalFiles${index}" multiple accept="image/*" />
+                </div>
+            </div>
+            <button type="button" class="btn btn-danger" onclick="removeAdditionalMarkdown(${index})">Remove</button>
+        `;
+        additionalMarkdownFiles.appendChild(newMarkdownGroup);
+    }
+
+    function showAdditionalMarkdownEditor(index) {
+        document.getElementById(`additionalMarkdownEditor${index}`).style.display = "block";
+        document.getElementById(`additionalMarkdownUploader${index}`).style.display = "none";
+        document.getElementById(`AdditionalMarkdownFile${index}`).value = "";
+        document.getElementById(`additionalMediaUploader${index}`).style.display = "block";
+    }
+
+    function showAdditionalMarkdownUploader(index) {
+        document.getElementById(`additionalMarkdownEditor${index}`).style.display = "none";
+        document.getElementById(`additionalMarkdownUploader${index}`).style.display = "block";
+        document.getElementById(`AdditionalMarkdownContent${index}`).value = "";
+        document.getElementById(`additionalMediaUploader${index}`).style.display = "block";
+    }
+
+    function clearAdditionalMarkdownFile(index) {
+        document.getElementById(`AdditionalMarkdownFile${index}`).value = "";
+    }
+
+    function clearAdditionalFiles(index) {
+        document.getElementById(`AdditionalFiles${index}`).value = "";
+    }
+
+    function removeAdditionalMarkdown(index) {
+        const additionalMarkdownFiles = document.getElementById("additionalMarkdownFiles");
+        const markdownGroup = document.getElementById(`additionalMarkdownEditor${index}`).parentElement;
+        additionalMarkdownFiles.removeChild(markdownGroup);
     }
 </script>
 

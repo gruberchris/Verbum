@@ -18,6 +18,15 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
     [BindProperty]
     public IFormFileCollection? Files { get; set; }
 
+    [BindProperty]
+    public List<string> AdditionalMarkdownFileNames { get; set; } = new();
+
+    [BindProperty]
+    public List<string> AdditionalMarkdownContents { get; set; } = new();
+
+    [BindProperty]
+    public List<IFormFile> AdditionalMarkdownFiles { get; set; } = new();
+
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
@@ -41,20 +50,39 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
         // Ensure the directory exists
         Directory.CreateDirectory(articleDirectory);
 
-        // Save the markdown content to a file if provided
+        // Save the root markdown content to a file if provided
         if (!string.IsNullOrEmpty(MarkdownContent))
         {
             var markdownFilePath = Path.Combine(articleDirectory, $"{formattedArticleName}.md");
             await System.IO.File.WriteAllTextAsync(markdownFilePath, MarkdownContent);
             logger.LogDebug("Saved markdown content to {MarkdownFilePath}", markdownFilePath);
         }
-        // Save the uploaded markdown file if provided
+        // Save the uploaded root markdown file if provided
         else if (MarkdownFile != null)
         {
             var markdownFilePath = Path.Combine(articleDirectory, $"{formattedArticleName}.md");
             await using var stream = new FileStream(markdownFilePath, FileMode.Create);
             await MarkdownFile.CopyToAsync(stream);
             logger.LogDebug("Saved uploaded markdown file to {MarkdownFilePath}", markdownFilePath);
+        }
+
+        // Save the additional markdown contents to files
+        for (int i = 0; i < AdditionalMarkdownFileNames.Count; i++)
+        {
+            var additionalFileName = ConvertToSlug(AdditionalMarkdownFileNames[i]);
+            var additionalFilePath = Path.Combine(articleDirectory, $"{additionalFileName}.md");
+
+            if (!string.IsNullOrEmpty(AdditionalMarkdownContents[i]))
+            {
+                await System.IO.File.WriteAllTextAsync(additionalFilePath, AdditionalMarkdownContents[i]);
+                logger.LogDebug("Saved additional markdown content to {AdditionalFilePath}", additionalFilePath);
+            }
+            else if (AdditionalMarkdownFiles.Count > i && AdditionalMarkdownFiles[i] != null)
+            {
+                await using var stream = new FileStream(additionalFilePath, FileMode.Create);
+                await AdditionalMarkdownFiles[i].CopyToAsync(stream);
+                logger.LogDebug("Saved uploaded additional markdown file to {AdditionalFilePath}", additionalFilePath);
+            }
         }
 
         // Save the uploaded media files
