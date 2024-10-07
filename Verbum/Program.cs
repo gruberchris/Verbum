@@ -28,7 +28,7 @@ app.MapRazorPages();
 using (var scope = app.Services.CreateScope())
 {
     var indexingService = scope.ServiceProvider.GetRequiredService<IndexingService>();
-    indexingService.BuildIndex();
+    await indexingService.BuildIndexAsync();
 }
 
 await app.RunAsync();

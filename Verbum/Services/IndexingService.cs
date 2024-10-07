@@ -7,10 +7,10 @@ public class IndexingService(ILogger<IndexingService> logger)
 {
     private static readonly ConcurrentDictionary<string, List<(string Name, string Url)>> Index = new();
 
-    public void BuildIndex()
+    public async Task BuildIndexAsync()
     {
         var stopwatch = Stopwatch.StartNew();
-        
+
         var articlesDirectory = Path.Combine("wwwroot", "articles");
 
         if (Directory.Exists(articlesDirectory))
@@ -25,33 +25,36 @@ public class IndexingService(ILogger<IndexingService> logger)
             foreach (var file in matchedFiles)
             {
                 logger.LogDebug("Indexing file: {FileName}", file.Name);
-                IndexFile(file);
+                await IndexFileAsync(file);
             }
         }
         else
         {
             logger.LogWarning("Articles directory does not exist: {ArticlesDirectory}", articlesDirectory);
         }
-        
+
         stopwatch.Stop();
         logger.LogInformation("Indexing completed in {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
     }
 
-    public void IndexFile((string Name, string Url) file)
+    public async Task IndexFileAsync((string Name, string Url) file)
     {
-        var terms = file.Name.Split([' ', '-', '_'], StringSplitOptions.RemoveEmptyEntries);
+        var terms = file.Name.Split(new[] { ' ', '-', '_' }, StringSplitOptions.RemoveEmptyEntries);
         foreach (var term in terms)
         {
             logger.LogDebug("Indexing term: {Term} for file: {FileName}", term, file.Name);
-            Index.AddOrUpdate(term.ToLowerInvariant(), [file], (_, list) =>
+            await Task.Run(() =>
             {
-                list.Add(file);
-                return list;
+                Index.AddOrUpdate(term.ToLowerInvariant(), new List<(string Name, string Url)> { file }, (_, list) =>
+                {
+                    list.Add(file);
+                    return list;
+                });
             });
         }
     }
 
-    public List<(string Name, string Url)> Search(string query)
+    public async Task<List<(string Name, string Url)>> SearchAsync(string query)
     {
         var searchTerms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var uniqueResults = new HashSet<(string Name, string Url)>();
@@ -70,6 +73,6 @@ public class IndexingService(ILogger<IndexingService> logger)
             }
         }
 
-        return uniqueResults.ToList();
+        return await Task.FromResult(uniqueResults.ToList());
     }
 }

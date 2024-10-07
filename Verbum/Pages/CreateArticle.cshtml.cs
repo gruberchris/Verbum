@@ -71,7 +71,7 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
 
         // Index the new article
         var file = (Name: formattedArticleName, Url: $"/articles/{formattedArticleName}/{formattedArticleName}.md");
-        indexingService.IndexFile(file);
+        await indexingService.IndexFileAsync(file);
 
         return RedirectToPage("/Index");
     }
