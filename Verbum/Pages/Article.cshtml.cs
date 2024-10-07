@@ -19,7 +19,8 @@ public class Article(ILogger<Article> logger) : PageModel
 
         logger.LogDebug("Article requested: {File} in folder {Folder}", file, folder);
 
-        var filePath = Path.Combine("wwwroot", "articles", folder, file);
+        var filePath = Path.Combine("wwwroot", "articles", folder, file + ".md");    
+        
         if (!System.IO.File.Exists(filePath))
         {
             ArticleContent = "Article not found.";
@@ -28,11 +29,16 @@ public class Article(ILogger<Article> logger) : PageModel
         }
 
         var markdownContent = await System.IO.File.ReadAllTextAsync(filePath);
+        
+        // Update image URLs to point to the wwwroot/articles/{article name}/ folder
         var articlePath = $"/articles/{folder}/";
         markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({articlePath}$2)");
-        markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?\.md)\)", $"[$1](/Article?file=$2&folder={folder})");
+        
+        // Update Markdown links to redirect to the Article view
+        markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?)(\.md)\)", $"[$1](/Article?file=$2&folder={folder})");
 
         var pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
+        
         ArticleContent = Markdown.ToHtml(markdownContent, pipeline);
     }
 }

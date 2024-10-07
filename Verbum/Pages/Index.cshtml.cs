@@ -22,21 +22,22 @@ public class IndexModel(ILogger<IndexModel> logger) : PageModel
             if (latestDirectory != null)
             {
                 var markdownFileName = $"{latestDirectory.Name}.md";
-                var markdownFile = latestDirectory.GetFiles(markdownFileName).FirstOrDefault();
-                if (markdownFile != null)
+                var rootMarkdownFile = latestDirectory.GetFiles(markdownFileName).FirstOrDefault();
+                
+                if (rootMarkdownFile != null)
                 {
-                    var markdownContent = await System.IO.File.ReadAllTextAsync(markdownFile.FullName);
-
-                    // Update image URLs to point to the wwwroot folder
+                    var markdownContent = await System.IO.File.ReadAllTextAsync(rootMarkdownFile.FullName);
+                    
+                    // Update image URLs to point to the wwwroot/articles/{article name}/ folder
                     var articlePath = $"/articles/{latestDirectory.Name}/";
                     markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({articlePath}$2)");
 
-                    // Update markdown links to point to the Article view
-                    markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?\.md)\)", $"[$1](/Article?file=$2&folder={latestDirectory.Name})");
+                    // Update Markdown links to redirect to the Article view
+                   markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?)(\.md)\)", $"[$1](/Article?file=$2&folder={latestDirectory.Name})");
 
                     LatestArticleContent = Markdown.ToHtml(markdownContent);
 
-                    logger.LogDebug("Rendered the latest article found: {ArticleName}", markdownFile.Name);
+                    logger.LogDebug("Rendered the latest article found: {ArticleName}", rootMarkdownFile.Name);
                 }
             }
         }
