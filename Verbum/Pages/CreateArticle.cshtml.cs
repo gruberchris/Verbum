@@ -67,7 +67,7 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
         }
 
         // Save the additional markdown contents to files
-        for (int i = 0; i < AdditionalMarkdownFileNames.Count; i++)
+        for (var i = 0; i < AdditionalMarkdownFileNames.Count; i++)
         {
             var additionalFileName = ConvertToSlug(AdditionalMarkdownFileNames[i]);
             var additionalFilePath = Path.Combine(articleDirectory, $"{additionalFileName}.md");
@@ -77,7 +77,7 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
                 await System.IO.File.WriteAllTextAsync(additionalFilePath, AdditionalMarkdownContents[i]);
                 logger.LogDebug("Saved additional markdown content to {AdditionalFilePath}", additionalFilePath);
             }
-            else if (AdditionalMarkdownFiles.Count > i && AdditionalMarkdownFiles[i] != null)
+            else if (AdditionalMarkdownFiles.Count > i)
             {
                 await using var stream = new FileStream(additionalFilePath, FileMode.Create);
                 await AdditionalMarkdownFiles[i].CopyToAsync(stream);
