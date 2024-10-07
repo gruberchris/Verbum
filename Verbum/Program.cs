@@ -1,15 +1,20 @@
+using Verbum.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<IndexingService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -18,5 +23,12 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 app.MapRazorPages();
+
+// Get the instance of IndexingService and build the index on startup
+using (var scope = app.Services.CreateScope())
+{
+    var indexingService = scope.ServiceProvider.GetRequiredService<IndexingService>();
+    indexingService.BuildIndex();
+}
 
 await app.RunAsync();

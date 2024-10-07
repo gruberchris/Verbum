@@ -7,7 +7,7 @@
 
 <h1>Search Results</h1>
 
-@if (Model.MatchedArticles != null && Model.MatchedArticles.Length > 0)
+@if (Model.MatchedArticles.Count > 0)
 {
     <ul>
         @foreach (var result in Model.MatchedArticles)

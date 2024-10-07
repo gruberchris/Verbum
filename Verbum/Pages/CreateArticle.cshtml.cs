@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Verbum.Services;
 
 namespace Verbum.Pages;
 
-public class CreateArticle(ILogger<CreateArticle> logger) : PageModel
+public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexingService) : PageModel
 {
     [BindProperty]
     public string ArticleName { get; set; } = string.Empty;
@@ -59,14 +60,18 @@ public class CreateArticle(ILogger<CreateArticle> logger) : PageModel
         // Save the uploaded media files
         if (Files != null)
         {
-            foreach (var file in Files)
+            foreach (var uploadedFile in Files)
             {
-                var filePath = Path.Combine(articleDirectory, file.FileName);
+                var filePath = Path.Combine(articleDirectory, uploadedFile.FileName);
                 await using var stream = new FileStream(filePath, FileMode.Create);
-                await file.CopyToAsync(stream);
+                await uploadedFile.CopyToAsync(stream);
                 logger.LogDebug("Saved uploaded file to {FilePath}", filePath);
             }
         }
+
+        // Index the new article
+        var file = (Name: formattedArticleName, Url: $"/articles/{formattedArticleName}/{formattedArticleName}.md");
+        indexingService.IndexFile(file);
 
         return RedirectToPage("/Index");
     }
