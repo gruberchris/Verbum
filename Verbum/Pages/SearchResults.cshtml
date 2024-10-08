@@ -13,8 +13,7 @@
         @foreach (var result in Model.MatchedArticles)
         {
             <li>
-                <a asp-page="/Article"
-                   asp-route-subject="@result.Name">@result.Name</a>
+                <a href="@result.Url">@result.Name</a>
             </li>
         }
     </ul>
