@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Verbum.Services;
@@ -107,6 +108,12 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
 
     private static string ConvertToSlug(string input)
     {
-        return input.Replace(" ", "-").ToLowerInvariant();
+        // Replace special characters with hyphens
+        var slug = input.Replace(" ", "-")
+            .Replace("&", "and")
+            .ToLowerInvariant();
+
+        // Remove any remaining invalid characters
+        return Regex.Replace(slug, @"[^a-z0-9\-]", "");
     }
 }
