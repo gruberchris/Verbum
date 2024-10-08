@@ -20,8 +20,15 @@ public class IndexingService(ILogger<IndexingService> logger)
 
             var matchedFiles = directoryInfo
                 .GetFiles("*.md", SearchOption.AllDirectories)
-                .Select(f => (Name: Path.GetFileNameWithoutExtension(f.Name),
-                    Url: f.Directory != null ? $"/Article?subject={f.Directory.Name}&article={Path.GetFileNameWithoutExtension(f.Name)}" : string.Empty));
+                .Select(f => 
+                {
+                    var subjectName = f.Directory?.Name ?? string.Empty;
+                    var articleName = Path.GetFileNameWithoutExtension(f.Name);
+                    var url = subjectName.Equals(articleName, StringComparison.OrdinalIgnoreCase) 
+                        ? $"/Article?subject={subjectName}" 
+                        : $"/Article?subject={subjectName}&article={articleName}";
+                    return (Name: articleName, Url: url);
+                });
 
             foreach (var file in matchedFiles)
             {
@@ -65,13 +72,12 @@ public class IndexingService(ILogger<IndexingService> logger)
 
         foreach (var term in searchTerms)
         {
-            if (!Index.TryGetValue(term, out var results))
-            {
-                logger.LogDebug("No results found for term: {Term}", term);
-                continue;
-            }
+            var lowerTerm = term.ToLowerInvariant();
+            var matchingResults = Index
+                .Where(kvp => kvp.Key.Contains(lowerTerm))
+                .SelectMany(kvp => kvp.Value);
 
-            foreach (var result in results)
+            foreach (var result in matchingResults)
             {
                 uniqueResults.Add(result);
             }
