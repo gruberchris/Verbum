@@ -19,13 +19,13 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
     public IFormFileCollection? Files { get; set; }
 
     [BindProperty]
-    public List<string> AdditionalMarkdownFileNames { get; set; } = new();
+    public List<string> AdditionalMarkdownFileNames { get; set; } = [];
 
     [BindProperty]
-    public List<string> AdditionalMarkdownContents { get; set; } = new();
+    public List<string> AdditionalMarkdownContents { get; set; } = [];
 
     [BindProperty]
-    public List<IFormFile> AdditionalMarkdownFiles { get; set; } = new();
+    public List<IFormFile> AdditionalMarkdownFiles { get; set; } = [];
 
     public async Task<IActionResult> OnPostAsync()
     {
