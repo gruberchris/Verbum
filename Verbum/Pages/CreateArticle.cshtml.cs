@@ -6,26 +6,19 @@ namespace Verbum.Pages;
 
 public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexingService) : PageModel
 {
-    [BindProperty]
-    public string SubjectName { get; set; } = string.Empty;
+    [BindProperty] public string SubjectName { get; set; } = string.Empty;
 
-    [BindProperty]
-    public string? MarkdownContent { get; set; }
+    [BindProperty] public string? MarkdownContent { get; set; }
 
-    [BindProperty]
-    public IFormFile? MarkdownFile { get; set; }
+    [BindProperty] public IFormFile? MarkdownFile { get; set; }
 
-    [BindProperty]
-    public IFormFileCollection? Files { get; set; }
+    [BindProperty] public IFormFileCollection? Files { get; set; } = new FormFileCollection();
 
-    [BindProperty]
-    public List<string> AdditionalMarkdownFileNames { get; set; } = [];
+    [BindProperty] public List<string> AdditionalMarkdownFileNames { get; set; } = [];
 
-    [BindProperty]
-    public List<string> AdditionalMarkdownContents { get; set; } = [];
+    [BindProperty] public List<string> AdditionalMarkdownContents { get; set; } = [];
 
-    [BindProperty]
-    public List<IFormFile> AdditionalMarkdownFiles { get; set; } = [];
+    [BindProperty] public List<IFormFile> AdditionalMarkdownFiles { get; set; } = [];
 
     public async Task<IActionResult> OnPostAsync()
     {
@@ -56,6 +49,11 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
             var markdownFilePath = Path.Combine(subjectFolder, $"{formattedSubjectName}.md");
             await System.IO.File.WriteAllTextAsync(markdownFilePath, MarkdownContent);
             logger.LogDebug("Saved markdown content to {MarkdownFilePath}", markdownFilePath);
+
+            // Index the root markdown file
+            var rootFile = (Name: formattedSubjectName,
+                Url: $"/articles/{formattedSubjectName}/{formattedSubjectName}.md");
+            await indexingService.IndexFileAsync(rootFile);
         }
         // Save the uploaded root markdown file if provided
         else if (MarkdownFile != null)
@@ -64,6 +62,11 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
             await using var stream = new FileStream(markdownFilePath, FileMode.Create);
             await MarkdownFile.CopyToAsync(stream);
             logger.LogDebug("Saved uploaded markdown file to {MarkdownFilePath}", markdownFilePath);
+
+            // Index the root markdown file
+            var rootFile = (Name: formattedSubjectName,
+                Url: $"/articles/{formattedSubjectName}/{formattedSubjectName}.md");
+            await indexingService.IndexFileAsync(rootFile);
         }
 
         // Save the additional markdown contents to files
@@ -83,23 +86,21 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
                 await AdditionalMarkdownFiles[i].CopyToAsync(stream);
                 logger.LogDebug("Saved uploaded additional markdown file to {AdditionalFilePath}", additionalFilePath);
             }
+
+            // Index the additional markdown file
+            var additionalFile = (Name: additionalFileName,
+                Url: $"/articles/{formattedSubjectName}/{additionalFileName}.md");
+            await indexingService.IndexFileAsync(additionalFile);
         }
 
-        // Save the uploaded media files
-        if (Files != null)
+        // Save the uploaded media files, if any
+        foreach (var uploadedFile in Files!)
         {
-            foreach (var uploadedFile in Files)
-            {
-                var filePath = Path.Combine(subjectFolder, uploadedFile.FileName);
-                await using var stream = new FileStream(filePath, FileMode.Create);
-                await uploadedFile.CopyToAsync(stream);
-                logger.LogDebug("Saved uploaded file to {FilePath}", filePath);
-            }
+            var filePath = Path.Combine(subjectFolder, uploadedFile.FileName);
+            await using var stream = new FileStream(filePath, FileMode.Create);
+            await uploadedFile.CopyToAsync(stream);
+            logger.LogDebug("Saved uploaded file to {FilePath}", filePath);
         }
-
-        // Index the new article
-        var file = (Name: formattedSubjectName, Url: $"/articles/{formattedSubjectName}/{formattedSubjectName}.md");
-        await indexingService.IndexFileAsync(file);
 
         return RedirectToPage("/Index");
     }
