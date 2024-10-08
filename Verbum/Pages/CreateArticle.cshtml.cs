@@ -7,7 +7,7 @@ namespace Verbum.Pages;
 public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexingService) : PageModel
 {
     [BindProperty]
-    public string ArticleName { get; set; } = string.Empty;
+    public string SubjectName { get; set; } = string.Empty;
 
     [BindProperty]
     public string? MarkdownContent { get; set; }
@@ -44,23 +44,23 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
             return Page();
         }
 
-        var formattedArticleName = ConvertToSlug(ArticleName);
-        var articleDirectory = Path.Combine("wwwroot", "articles", formattedArticleName);
+        var formattedSubjectName = ConvertToSlug(SubjectName);
+        var subjectFolder = Path.Combine("wwwroot", "articles", formattedSubjectName);
 
         // Ensure the directory exists
-        Directory.CreateDirectory(articleDirectory);
+        Directory.CreateDirectory(subjectFolder);
 
         // Save the root markdown content to a file if provided
         if (!string.IsNullOrEmpty(MarkdownContent))
         {
-            var markdownFilePath = Path.Combine(articleDirectory, $"{formattedArticleName}.md");
+            var markdownFilePath = Path.Combine(subjectFolder, $"{formattedSubjectName}.md");
             await System.IO.File.WriteAllTextAsync(markdownFilePath, MarkdownContent);
             logger.LogDebug("Saved markdown content to {MarkdownFilePath}", markdownFilePath);
         }
         // Save the uploaded root markdown file if provided
         else if (MarkdownFile != null)
         {
-            var markdownFilePath = Path.Combine(articleDirectory, $"{formattedArticleName}.md");
+            var markdownFilePath = Path.Combine(subjectFolder, $"{formattedSubjectName}.md");
             await using var stream = new FileStream(markdownFilePath, FileMode.Create);
             await MarkdownFile.CopyToAsync(stream);
             logger.LogDebug("Saved uploaded markdown file to {MarkdownFilePath}", markdownFilePath);
@@ -70,7 +70,7 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
         for (var i = 0; i < AdditionalMarkdownFileNames.Count; i++)
         {
             var additionalFileName = ConvertToSlug(AdditionalMarkdownFileNames[i]);
-            var additionalFilePath = Path.Combine(articleDirectory, $"{additionalFileName}.md");
+            var additionalFilePath = Path.Combine(subjectFolder, $"{additionalFileName}.md");
 
             if (!string.IsNullOrEmpty(AdditionalMarkdownContents[i]))
             {
@@ -90,7 +90,7 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
         {
             foreach (var uploadedFile in Files)
             {
-                var filePath = Path.Combine(articleDirectory, uploadedFile.FileName);
+                var filePath = Path.Combine(subjectFolder, uploadedFile.FileName);
                 await using var stream = new FileStream(filePath, FileMode.Create);
                 await uploadedFile.CopyToAsync(stream);
                 logger.LogDebug("Saved uploaded file to {FilePath}", filePath);
@@ -98,7 +98,7 @@ public class CreateArticle(ILogger<CreateArticle> logger, IndexingService indexi
         }
 
         // Index the new article
-        var file = (Name: formattedArticleName, Url: $"/articles/{formattedArticleName}/{formattedArticleName}.md");
+        var file = (Name: formattedSubjectName, Url: $"/articles/{formattedSubjectName}/{formattedSubjectName}.md");
         await indexingService.IndexFileAsync(file);
 
         return RedirectToPage("/Index");

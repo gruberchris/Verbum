@@ -14,11 +14,12 @@ ViewData["Title"] = "Create Article";
     </div>
 
     <div class="form-group">
-        <label>Root Markdown Content</label>
-        <div class="btn-group" role="group">
+        <label for="MarkdownContent">Root Markdown Content</label>
+        <fieldset>
+            <legend class="sr-only">Markdown Options</legend>
             <button type="button" class="btn btn-secondary" id="typeMarkdownButton" onclick="showMarkdownEditor()">Type Markdown</button>
             <button type="button" class="btn btn-secondary" id="uploadMarkdownButton" onclick="showMarkdownUploader()">Upload Markdown</button>
-        </div>
+        </fieldset>
     </div>
 
     <div class="form-group" id="markdownEditor" style="display:none;">

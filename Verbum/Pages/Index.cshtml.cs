@@ -28,12 +28,12 @@ public class IndexModel(ILogger<IndexModel> logger) : PageModel
                 {
                     var markdownContent = await System.IO.File.ReadAllTextAsync(rootMarkdownFile.FullName);
                     
-                    // Update image URLs to point to the wwwroot/articles/{article name}/ folder
-                    var articlePath = $"/articles/{latestDirectory.Name}/";
-                    markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({articlePath}$2)");
+                    // Update image URLs to point to the wwwroot/articles/{subject name}/ folder
+                    var subjectPath = $"/articles/{latestDirectory.Name}/";
+                    markdownContent = Regex.Replace(markdownContent, @"!\[(.*?)\]\((.*?)\)", $"![$1]({subjectPath}$2)");
 
                     // Update Markdown links to redirect to the Article view
-                   markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?)(\.md)\)", $"[$1](/Article?file=$2&folder={latestDirectory.Name})");
+                   markdownContent = Regex.Replace(markdownContent, @"\[(.*?)\]\((.*?)(\.md)\)", $"[$1](/Article?subject={latestDirectory.Name}&article=$2)");
 
                     LatestArticleContent = Markdown.ToHtml(markdownContent);
 
