@@ -5,12 +5,12 @@
 ViewData["Title"] = "Create Article";
 }
 
-<h1>Create a New Article</h1>
+<h1>Create a New Subject</h1>
 
 <form method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
     <div class="form-group">
-        <label for="ArticleName">Article Name</label>
-        <input type="text" class="form-control" id="ArticleName" name="ArticleName" required oninput="toggleControls()" />
+        <label for="SubjectName">Subject Name</label>
+        <input type="text" class="form-control" id="SubjectName" name="SubjectName" required oninput="toggleControls()" />
     </div>
 
     <div class="form-group">
@@ -56,7 +56,7 @@ ViewData["Title"] = "Create Article";
 
 <script>
     function validateForm() {
-        const articleName = document.getElementById("ArticleName").value;
+        const articleName = document.getElementById("SubjectName").value;
         const markdownContent = document.getElementById("MarkdownContent").value;
         const markdownFile = document.getElementById("MarkdownFile").files.length;
 
@@ -73,7 +73,7 @@ ViewData["Title"] = "Create Article";
     }
 
     function toggleControls() {
-        const articleName = document.getElementById("ArticleName").value;
+        const articleName = document.getElementById("SubjectName").value;
         const markdownContent = document.getElementById("MarkdownContent").value;
         const markdownFile = document.getElementById("MarkdownFile").files.length;
         const mediaUploader = document.getElementById("mediaUploader");
